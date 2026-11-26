@@ -181,8 +181,15 @@ table.dsum tbody tr:hover td.dsum-d{background:#dbeafe}
     try { n = parseInt(window.localStorage.getItem(key) || '0', 10) || 0; } catch (e) { n = 0; }
     if (n >= 2) { fbShow('今天已反馈过 2 次，感谢参与 😊'); return; }
     try { window.localStorage.setItem(key, String(n + 1)); } catch (e) {}
-    window._hmt = window._hmt || [];
-    window._hmt.push(['_trackEvent', '预测反馈', ok ? '预测准' : '预测不准', d.getMonth() + 1 + '月' + d.getDate() + '日']);
+    /* 双站点 PV 计数：隐藏 iframe 加载 fb_ok/fb_no 页面，每次加载 = 对应站点 1 个 PV */
+    var host = ok ? '' : '';
+    if (host) {
+      var f = document.createElement('iframe');
+      f.style.display = 'none';
+      f.src = (ok ? 'fb_ok.html' : 'fb_no.html') + '?ts=' + new Date().getTime();
+      document.body.appendChild(f);
+      setTimeout(function () { if (f.parentNode) f.parentNode.removeChild(f); }, 6000);
+    }
     fbShow(ok ? '已记录：今天预测准 👍' : '已记录：今天预测不准 👎');
   }
   window.fbClick = fbClick; /* inline onclick 需要全局可见 */
