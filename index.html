@@ -55,6 +55,17 @@ tbody th.time{position:sticky;left:0;background:#f8fafc;z-index:1;text-align:lef
   font-weight:600;white-space:nowrap;padding:6px 4px;font-size:11.5px;font-variant-numeric:tabular-nums}
 tbody tr:nth-child(even) th.time{background:#eef2f7}
 .dsum-note{font-size:12px;color:#64748b;margin-top:6px}
+.fb-btns{margin-top:9px;display:flex;gap:10px;flex-wrap:wrap}
+.fb-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border:none;border-radius:20px;
+  font-size:13.5px;font-weight:700;color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18);
+  transition:transform .1s,box-shadow .1s;-webkit-tap-highlight-color:transparent}
+.fb-btn:hover{box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.fb-btn:active{transform:translateY(1px);box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.fb-ok{background:linear-gradient(135deg,#34d399,#059669)}
+.fb-no{background:linear-gradient(135deg,#fb923c,#ea580c)}
+.fb-toast{position:fixed;left:50%;bottom:56px;transform:translateX(-50%);background:rgba(15,23,42,.88);
+  color:#fff;padding:10px 20px;border-radius:22px;font-size:13.5px;font-weight:600;z-index:99;
+  opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap}
 tbody td{padding:0;border:1px solid var(--line);text-align:center;height:34px;font-variant-numeric:tabular-nums}
 td .v{display:block;padding:6px 4px}
 td .v.wx{white-space:nowrap;font-weight:600;padding:6px 8px}
@@ -149,6 +160,32 @@ table.dsum tbody tr:hover td.dsum-d{background:#dbeafe}
     if (!o || !o.t) return '<span class="fire-no">—</span>';
     return '<span class="' + esc(o.cls || 'fire-no') + '">' + esc(o.t) + '</span>';
   }
+  /* ---- 预测反馈按钮：百度统计事件跟踪，每人每天最多统计 2 次 ---- */
+  function fbShow(msg) {
+    var t = document.getElementById('fbToast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'fbToast';
+      t.className = 'fb-toast';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function () { t.style.opacity = '0'; }, 1800);
+  }
+  function fbClick(ok) {
+    var d = new Date();
+    var key = 'fb' + d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+    var n = 0;
+    try { n = parseInt(window.localStorage.getItem(key) || '0', 10) || 0; } catch (e) { n = 0; }
+    if (n >= 2) { fbShow('今天已反馈过 2 次，感谢参与 😊'); return; }
+    try { window.localStorage.setItem(key, String(n + 1)); } catch (e) {}
+    window._hmt = window._hmt || [];
+    window._hmt.push(['_trackEvent', '预测反馈', ok ? '预测准' : '预测不准', d.getMonth() + 1 + '月' + d.getDate() + '日']);
+    fbShow(ok ? '已记录：今天预测准 👍' : '已记录：今天预测不准 👎');
+  }
+  window.fbClick = fbClick; /* inline onclick 需要全局可见 */
   /* ---- cookie：记住最后一次选择的城市 ---- */
   function getCookie(k) {
     var m = document.cookie.match(new RegExp('(?:^|; )' + k + '=([^;]*)'));
@@ -214,7 +251,11 @@ table.dsum tbody tr:hover td.dsum-d{background:#dbeafe}
       });
       h += '</tr>';
     });
-    return h + '</tbody></table></div><div class="dsum-note">预测数据仅供参考，跑空自负。</div></section>';
+    return h + '</tbody></table></div><div class="dsum-note">预测数据仅供参考，跑空自负。</div>' +
+      '<div class="fb-btns">' +
+      '<button type="button" class="fb-btn fb-ok" onclick="fbClick(1)">👍 今天预测准</button>' +
+      '<button type="button" class="fb-btn fb-no" onclick="fbClick(0)">👎 今天预测不准</button>' +
+      '</div></section>';
   }
 
   /* ---- 逐小时明细（无低云遮挡列；表头配色与 PHP 一致；每天首行黑色分隔线） ---- */
