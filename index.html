@@ -182,7 +182,7 @@ table.dsum tbody tr:hover td.dsum-d{background:#dbeafe}
     if (n >= 2) { fbShow('今天已反馈过 2 次，感谢参与 😊'); return; }
     try { window.localStorage.setItem(key, String(n + 1)); } catch (e) {}
     /* 双站点 PV 计数：隐藏 iframe 加载 fb_ok/fb_no 页面，每次加载 = 对应站点 1 个 PV */
-    var host = ok ? '' : '';
+    var host = ok ? '6773a5fc61438efce53a0e07f2561603' : '217b2fa712c22e315761536a0c493221';
     if (host) {
       var f = document.createElement('iframe');
       f.style.display = 'none';
